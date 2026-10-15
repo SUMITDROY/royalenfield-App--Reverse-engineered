@@ -2,7 +2,7 @@
 """Isolated on-device graphics test; no Bluetooth, RE hooks or user data."""
 import pathlib,subprocess,os,zipfile,sys,shutil
 root=pathlib.Path(__file__).resolve().parents[2];tests=root/'runtime-module/tests'
-out=root/'output/bridge-overlay-tests';out.mkdir(exist_ok=True)
+out=root/'output/bridge-overlay-tests';out.mkdir(parents=True,exist_ok=True)
 classes=out/'classes';dex=out/'dex'
 for folder in [classes,dex]:
     shutil.rmtree(folder,ignore_errors=True);folder.mkdir()

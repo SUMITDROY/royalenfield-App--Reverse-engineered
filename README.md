@@ -56,6 +56,12 @@ See [testing evidence and open issues](docs/TESTING.md),
 
 ## Build and install
 
+A device-tested experimental APK and its SHA-256 are available under
+[GitHub Releases](https://github.com/SUMITDROY/royalenfield-App--Reverse-engineered/releases).
+Read the release notes and signing guidance before installing. CI artifacts use
+new development signing keys and cannot be assumed to update an existing install.
+
+
 Install Python 3.10+, JDK 17+ and the Android SDK, then:
 
 ```sh

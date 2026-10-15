@@ -1,0 +1,26 @@
+# Local vendor artifacts, tools, build products and diagnostic exports
+/tools/
+/analysis/
+/output/
+/.local/
+.env
+.env.*
+!.env.example
+*.apk
+*.apks
+*.aab
+*.dex
+*.jar
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+*.log
+*.pem
+*.key
+__pycache__/
+*.py[cod]
+.DS_Store
+DerivedData/
+xcuserdata/
+*.xcuserstate

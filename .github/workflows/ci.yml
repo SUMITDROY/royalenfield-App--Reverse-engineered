@@ -1,0 +1,36 @@
+name: Build and protocol tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android build dependencies
+        run: sdkmanager 'platforms;android-35' 'build-tools;36.1.0'
+      - name: Fetch pinned compile-only API
+        run: python3 scripts/bootstrap.py
+      - name: Protocol and action guard tests
+        run: python3 runtime-module/tests/run.py
+      - name: Build module
+        run: python3 runtime-module/build.py
+      - name: Build isolated instrumentation tests
+        run: python3 runtime-module/tests/build_device_test.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: development-apks
+          path: |
+            output/tripper-screen-off-lsposed.apk
+            output/bridge-overlay-tests/overlay-test.apk
+          retention-days: 7

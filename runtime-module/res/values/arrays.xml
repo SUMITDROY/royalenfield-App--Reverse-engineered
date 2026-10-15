@@ -1,0 +1,1 @@
+<resources><string-array name="xposed_scope"><item>com.royalenfield.reprime</item><item>com.android.bluetooth</item></string-array></resources>

@@ -1,0 +1,28 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.re.screenoff.module" android:versionCode="5" android:versionName="0.4-call-actions">
+  <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+  <queries><package android:name="com.royalenfield.reprime"/></queries>
+  <application android:name="local.re.screenoff.BridgeApplication" android:label="Tripper iPhone Bridge" android:allowBackup="false" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.NoActionBar">
+    <activity android:name="local.re.screenoff.BridgeActivity" android:exported="true">
+      <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+    </activity>
+    <service android:name="local.re.screenoff.BridgeService" android:exported="false" android:foregroundServiceType="connectedDevice"/>
+    <provider android:name="local.re.screenoff.BridgeProvider" android:authorities="local.re.screenoff.module.bridge" android:exported="true" android:grantUriPermissions="true"/>
+    <receiver android:name="local.re.screenoff.BridgeBootReceiver" android:exported="false">
+      <intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter>
+    </receiver>
+    <meta-data android:name="xposedmodule" android:value="true"/>
+    <meta-data android:name="xposeddescription" android:value="Screen-off navigation for RE 193; iPhone media and experimental rooted HFP calls. Android-15 Bluetooth compatibility hook and local logs."/>
+    <meta-data android:name="xposedminversion" android:value="82"/>
+    <meta-data android:name="xposedscope" android:resource="@array/xposed_scope"/>
+  </application>
+</manifest>

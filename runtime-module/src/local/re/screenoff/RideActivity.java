@@ -20,11 +20,11 @@ public final class RideActivity extends Activity {
         live.setText("Android → Dash: "+(fresh?(BridgeState.dashConnected?"transport present (delivery unverified)":"disconnected"):"unknown — open RE")+"\niPhone media: "+(BridgeState.mediaReady?"ready":"not ready")+" • Notifications: "+(BridgeState.callsReady?"ready":"not ready")+"\nCall channel: "+(BridgeState.hfpReady?"connected":BridgeState.hfpStatus)+"\niPhone headset: not exposed to Android\n"+RideHealth.battery(RideActivity.this)+"\niPhone battery: not exposed by current bridge\n"+(TripRecorderService.current==null?"Trip recorder stopped":TripRecorderService.current.summary())+"\nFleet sharing: "+(p.getBoolean("sharing",false)?"enabled for recorded rides":"off")+" • "+(p.getString("fleetUrl","").isEmpty()?"server not configured":FleetClient.status));
         handler.postDelayed(this,2000);
     }};
-    @Override public void onCreate(Bundle b){super.onCreate(b);store=new RideStore(this);p=getSharedPreferences("bridge",0);fleet=new FleetClient(this);BridgeState.init(this);
+    @Override public void onCreate(Bundle b){super.onCreate(b);HudTheme.window(this);store=new RideStore(this);p=getSharedPreferences("bridge",0);fleet=new FleetClient(this);BridgeState.init(this);
         ScrollView scroll=new ScrollView(this);layout=new LinearLayout(this);layout.setOrientation(1);layout.setPadding(28,32,28,48);scroll.addView(layout);setContentView(scroll);
-        scroll.setOnApplyWindowInsetsListener((v,insets)->{android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars());layout.setPadding(28+bars.left,20+bars.top,28+bars.right,32+bars.bottom);return insets;});scroll.requestApplyInsets();
+        scroll.setOnApplyWindowInsetsListener((v,insets)->{android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars());scroll.setPadding(bars.left,bars.top,bars.right,bars.bottom);scroll.setClipToPadding(true);layout.setPadding(24,20,24,32);return insets;});scroll.requestApplyInsets();
         Spinner jump=new Spinner(this);layout.addView(jump);
-        heading("Ride tools • experimental 0.5");live=new TextView(this);live.setTextSize(16);layout.addView(live);
+        heading("Rider systems");live=new TextView(this);live.setTextSize(16);layout.addView(live);
         heading("Connections and riding profile");
         button("Open bridge and call controls",()->startActivity(new Intent(this,BridgeActivity.class)));
         button("Reconnect iPhone services",()->{if(BridgeService.current!=null)BridgeService.current.refreshIphone();else toast("Start bridge first");});
@@ -80,6 +80,7 @@ public final class RideActivity extends Activity {
         button("Export portable settings backup",()->export("application/json","tripper-settings.json",203));
         button("Restore portable settings",()->{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(i,204);});
         button("Update / rollback instructions",()->dialog("Recovery","Updates signed with the same key preserve private settings and ride DB. Export settings/GPX first. Keep your previous working module APK. Stop HFP, reboot to reset its property, then disable Bluetooth scope before removing the module. Never replace the official RE APK. Restored settings do not enable root calls, recording or sharing automatically."));
+        HudTheme.decorate(layout);
         java.util.List<String> jumps=new ArrayList<>();jumps.add("Jump to a section…");for(TextView section:sections)jumps.add(section.getText().toString());
         ArrayAdapter<String> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_dropdown_item,jumps);jump.setAdapter(adapter);
         jump.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> parent){}public void onItemSelected(android.widget.AdapterView<?> parent,android.view.View view,int position,long id){if(position>0)scroll.post(()->scroll.smoothScrollTo(0,sections.get(position-1).getTop()));}});

@@ -139,3 +139,13 @@ covered by tests. No live fleet location was sent from the phone during developm
 A real moving ride, actual matching contact photo/call, native Dash button behavior,
 automatic bike link events, server deployment, real multi-rider use and headset
 coexistence still require physical testing. No universal device support is claimed.
+
+## 0.6 interface update
+
+The bridge and rider-tools screens use a native dark HUD palette, cyan accents,
+outlined controls, numbered sections and a static reactor-style service indicator.
+The indicator reflects whether the bridge service is running; it is not evidence
+that the Dash, iPhone or headset is connected. Separate telemetry distinguishes RE
+IPC from Dash transport presence. No decorative animation loop runs in the background.
+Pairing instructions are available through the Pairing guide button. Existing
+permissions, saved settings, profiles and backend behavior remain unchanged.

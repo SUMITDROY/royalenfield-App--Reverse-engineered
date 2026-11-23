@@ -11,27 +11,40 @@ import java.io.*;
 
 /** Small setup screen; bridge runs as a connected-device foreground service. */
 public final class BridgeActivity extends Activity {
-    private TextView status;private Button positive,negative;private final Handler handler=new Handler(Looper.getMainLooper());
+    private TextView status,mediaStatus,linkStatus;private HudTheme.Reactor reactor;private Button positive,negative;private final Handler handler=new Handler(Looper.getMainLooper());
     private final Runnable refresh=new Runnable(){public void run(){
         Bundle b=BridgeState.snapshot();
         String name="Android phone";try{name=getSystemService(BluetoothManager.class).getAdapter().getName();}catch(Exception ignored){}
-        status.setText("Find in LightBlue: "+name+"\n"+b.getString("status")+"\nCalls: "+(b.getBoolean("callsReady")?"ready":"waiting")
-            +" • Media: "+(b.getBoolean("mediaReady")?"ready":"waiting")+"\nDash hook: "+(b.getBoolean("hookAlive")?"connected":"open/restart Royal Enfield")
-            +"\nCalls channel: "+b.getString("hfpStatus")+"\nCall: "+b.getString("callPhase")+" "+b.getString("call")
-            +"\n"+b.getString("player")+"\n"+b.getString("title")+"\n"+b.getString("artist"));
+        reactor.active(b.getBoolean("running"));
+        linkStatus.setText((b.getBoolean("running")?"BRIDGE ACTIVE":"BRIDGE STANDBY")+"  /  "+name);
+        status.setText("RE INTERFACE     "+(b.getBoolean("hookAlive")?"Online":"Open Royal Enfield")
+            +"\nDASH TRANSPORT     "+(SystemClock.elapsedRealtime()-BridgeState.dashUpdated<10000&&BridgeState.dashUpdated>0?(BridgeState.dashConnected?"Present · delivery unverified":"Disconnected"):"Unknown")
+            +"\nIPHONE MEDIA     "+(b.getBoolean("mediaReady")?"Ready":"Not connected")
+            +"\nNOTIFICATIONS     "+(b.getBoolean("callsReady")?"Ready":"Not connected")
+            +"\nCALL CHANNEL     "+b.getString("hfpStatus")+"\n"+RideHealth.battery(BridgeActivity.this));
+        mediaStatus.setText(!b.getString("call","").isEmpty()?b.getString("callPhase")+" · "+b.getString("call"):
+            b.getString("title","").isEmpty()?"No track playing\nPlay music on your paired iPhone":b.getString("title")+"\n"+b.getString("artist"));
         positive.setText(b.getString("positiveLabel","").isEmpty()?"No positive call action":b.getString("positiveLabel"));positive.setEnabled(!b.getString("positiveLabel","").isEmpty());
         negative.setText(b.getString("negativeLabel","").isEmpty()?"No negative call action":b.getString("negativeLabel"));negative.setEnabled(!b.getString("negativeLabel","").isEmpty());handler.postDelayed(this,1000);
     }};
     @Override public void onCreate(Bundle b){
-        super.onCreate(b);BridgeState.init(this);
+        super.onCreate(b);BridgeState.init(this);HudTheme.window(this);
         ScrollView scroll=new ScrollView(this);LinearLayout layout=new LinearLayout(this);layout.setOrientation(LinearLayout.VERTICAL);layout.setPadding(24,32,24,32);scroll.addView(layout);setContentView(scroll);
-        scroll.setOnApplyWindowInsetsListener((v,insets)->{android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars());layout.setPadding(24+bars.left,20+bars.top,24+bars.right,32+bars.bottom);return insets;});scroll.requestApplyInsets();
-        TextView title=new TextView(this);title.setText("Tripper iPhone Bridge");title.setTextSize(25);layout.addView(title);
-        status=new TextView(this);status.setTextSize(16);status.setPadding(0,20,0,20);layout.addView(status);
-        button(layout,"Ride tools / trips / contacts / fleet / settings",v->startActivity(new Intent(this,RideActivity.class)));
-        TextView help=new TextView(this);help.setText("Android stays connected to the Dash for navigation. iPhone provides calls and media.\n\n1. Tap Start.\n2. Use Tripper Pair on iPhone (or LightBlue) to connect to this Android and accept pairing / notification sharing.\n3. Finish pairing and release the app connection. Start music on iPhone.\n4. Open Royal Enfield. Notification access must be enabled.\n\nIncoming-call actions appear only when iPhone reports them. With a call card visible, media Next/Previous selects an action; Play/Pause performs it. Actual Dash routing must be tested. The buttons below provide the same actions.\n\nConnect the root iPhone call channel for active-call details and Disconnect. Grant KernelSU root to this bridge when prompted. First activation may restart Bluetooth. The compatibility fix must be enabled for Bluetooth in Vector. Audio routing to Android is disabled once connected; verify headset audio during testing. A ringing alert disappearing alone is not interpreted as an answered call.\n\nThis build does not stream iPhone video.");layout.addView(help);
+        scroll.setOnApplyWindowInsetsListener((v,insets)->{android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars());scroll.setPadding(bars.left,bars.top,bars.right,bars.bottom);scroll.setClipToPadding(true);layout.setPadding(24,20,24,32);return insets;});scroll.requestApplyInsets();
+        TextView eyebrow=HudTheme.label(this,"TRIPPER  /  DUAL-PHONE SYSTEM",11,HudTheme.CYAN);eyebrow.setLetterSpacing(.15f);layout.addView(eyebrow);
+        TextView title=HudTheme.label(this,"Command centre",30,HudTheme.TEXT);title.setPadding(0,12,0,0);layout.addView(title);
+        TextView subtitle=HudTheme.label(this,"Android navigates. iPhone stays yours.",14,HudTheme.MUTED);subtitle.setPadding(0,8,0,16);layout.addView(subtitle);
+        reactor=new HudTheme.Reactor(this);layout.addView(reactor,new LinearLayout.LayoutParams(-1,HudTheme.dp(this,154)));
+        linkStatus=HudTheme.label(this,"BRIDGE STANDBY",11,HudTheme.CYAN);linkStatus.setGravity(android.view.Gravity.CENTER);linkStatus.setPadding(0,4,0,20);layout.addView(linkStatus);
+        section(layout,"01  /  CONNECTION TELEMETRY");
+        status=new TextView(this);status.setTextSize(14);status.setPadding(28,24,28,24);status.setBackground(HudTheme.panel(HudTheme.PANEL,HudTheme.LINE));layout.addView(status);
+        section(layout,"02  /  NOW PLAYING & CALLS");
+        mediaStatus=HudTheme.label(this,"No track playing",18,HudTheme.TEXT);mediaStatus.setPadding(24,20,24,20);layout.addView(mediaStatus);
+        button(layout,"Ride tools  →  Trips, fleet & settings",v->startActivity(new Intent(this,RideActivity.class)));
+        section(layout,"03  /  BRIDGE CONTROL");
         button(layout,"Start bridge",v->start());button(layout,"Stop bridge",v->{getSharedPreferences("bridge",0).edit().putBoolean("enabled",false).apply();stopService(new Intent(this,BridgeService.class));});
         button(layout,"Refresh iPhone call/music services",v->{if(BridgeService.current!=null)BridgeService.current.refreshIphone();});
+        section(layout,"04  /  CALL ACTIONS");
         positive=new Button(this);negative=new Button(this);layout.addView(positive);layout.addView(negative);
         positive.setOnClickListener(v->act(0));negative.setOnClickListener(v->act(1));
         button(layout,"Pair iPhone for calls",v->startActivity(new Intent(android.bluetooth.BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE).putExtra(android.bluetooth.BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,120)));
@@ -48,6 +61,7 @@ public final class BridgeActivity extends Activity {
             }catch(Exception e){BridgeState.log("HFP_DEVICE_PICKER_FAILED",e);}
         });
         button(layout,"Stop iPhone call channel",v->{getSharedPreferences("bridge",0).edit().putBoolean("hfpEnabled",false).apply();if(BridgeService.current!=null)BridgeService.current.disableHfp();});
+        section(layout,"05  /  DISPLAY & SYSTEM");
         CheckBox art=new CheckBox(this);art.setText("Look up cover art online (sends track title/artist to Apple)");art.setChecked(getSharedPreferences("bridge",0).getBoolean("artwork",false));layout.addView(art);
         art.setOnCheckedChangeListener((v,on)->{getSharedPreferences("bridge",0).edit().putBoolean("artwork",on).apply();if(BridgeService.current!=null)BridgeService.current.artworkPreferenceChanged();});
         CheckBox overlay=new CheckBox(this);overlay.setText("Show media/call overlay on navigation");overlay.setChecked(getSharedPreferences("bridge",0).getBoolean("overlay",true));layout.addView(overlay);
@@ -55,8 +69,11 @@ public final class BridgeActivity extends Activity {
         button(layout,"Royal Enfield notification access",v->startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)));
         button(layout,"Bridge battery settings",v->startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)));
         button(layout,"Export bridge logs",v->{Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"tripper-iphone-bridge.log");startActivityForResult(i,44);});
+        button(layout,"Pairing guide",v->new android.app.AlertDialog.Builder(this).setTitle("Connect your iPhone").setMessage("Start the bridge, connect to this Android in LightBlue, then approve pairing and notification sharing. Close LightBlue after bonding. For full calls, pair in iPhone Bluetooth Settings and select the iPhone in Connect calls. HFP/headset coexistence is still experimental. RE interface online does not prove physical Dash delivery.").setPositiveButton("Got it",null).show());
         button(layout,"Reset remembered iPhone",v->{stopService(new Intent(this,BridgeService.class));getSharedPreferences("bridge",0).edit().remove("peer").putBoolean("enabled",false).apply();BridgeState.log("REMEMBERED_PEER_RESET",null);});
+        HudTheme.decorate(layout);
     }
+    private void section(LinearLayout layout,String text){TextView t=HudTheme.label(this,text,11,HudTheme.CYAN);t.setLetterSpacing(.1f);t.setPadding(0,32,0,16);layout.addView(t);}
     private void button(LinearLayout l,String text,View.OnClickListener click){Button b=new Button(this);b.setText(text);b.setOnClickListener(click);l.addView(b);}
     private void act(int action){Bundle b=BridgeState.snapshot();if(BridgeService.current!=null)BridgeService.current.callAction(b.getString("callToken",""),action);}
     private void start(){

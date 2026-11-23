@@ -15,7 +15,7 @@ final class IPhoneDashHooks {
     private static Context context;private static ClassLoader loader;
     private static final Handler main=new Handler(Looper.getMainLooper());
     private static Handler worker;private static volatile Bundle state=Bundle.EMPTY;
-    private static volatile Bitmap art;private static volatile long lastPoll;
+    private static volatile Bitmap art,callerArt;private static long callerVersion=-1;private static volatile long lastPoll;
     private static long artVersion=-1,lastError,lastForward;private static String sentCall="",sentMedia="";
     private static WeakReference<Object> foreground=new WeakReference<>(null);
     private static boolean reportedOverlay;
@@ -28,10 +28,10 @@ final class IPhoneDashHooks {
             hooks.add(XposedHelpers.findAndHookMethod(SERVICE,loader,"onStartCommand",android.content.Intent.class,int.class,int.class,new XC_MethodHook(){
                 @Override protected void afterHookedMethod(MethodHookParam p){foreground=new WeakReference<>(p.thisObject);sentMedia="";}
             }));
-            for(String cls:new String[]{SERVICE,"bluconnect.djf"}){
+            for(String cls:new String[]{SERVICE,HookTargets.media()}){
                 // Verified version-193 mappings: H toggle, s next, n previous, N/M volume.
-                for(String method:new String[]{"H","s","n","N","M"}){
-                    final int command="H".equals(method)?2:"s".equals(method)?3:"n".equals(method)?4:"N".equals(method)?5:6;
+                for(int index=0;index<5;index++){
+                    final String method=HookTargets.buttons()[index];final int command=index+2;
                     hooks.add(XposedHelpers.findAndHookMethod(cls,loader,method,new XC_MethodHook(){
                         @Override protected void beforeHookedMethod(MethodHookParam p){
                             if(fresh()&&state.getBoolean("running")&&!state.getString("call","").isEmpty()&&(command==2||command==3||command==4)){
@@ -60,7 +60,7 @@ final class IPhoneDashHooks {
                     }));
                 }
             }
-            hooks.add(XposedHelpers.findAndHookMethod("bluconnect.gub",loader,"g",Bitmap.class,String.class,new XC_MethodHook(){
+            hooks.add(XposedHelpers.findAndHookMethod(HookTargets.encoder(),loader,"g",Bitmap.class,String.class,new XC_MethodHook(){
                 @Override protected void beforeHookedMethod(MethodHookParam p){
                     if(overlayDisabled||!fresh()||!state.getBoolean("overlay")||!state.getBoolean("running"))return;
                     try{Bitmap original=(Bitmap)p.args[0];Bitmap composite=overlay(original);if(composite!=original)p.args[0]=composite;}
@@ -84,23 +84,28 @@ final class IPhoneDashHooks {
                     Bitmap decoded=BitmapFactory.decodeStream(in);if(decoded!=null&&decoded.getWidth()<=96&&decoded.getHeight()<=96)art=decoded;
                 }catch(java.io.FileNotFoundException ignored){}
             }
+            if(b.getLong("callerPhotoVersion")!=callerVersion){callerVersion=b.getLong("callerPhotoVersion");callerArt=null;
+                if(b.getBoolean("callerPhoto"))try(InputStream in=context.getContentResolver().openInputStream(Uri.withAppendedPath(BridgeProvider.URI,"caller"))){callerArt=BitmapFactory.decodeStream(in);}catch(java.io.FileNotFoundException ignored){}
+            }
             state=b;lastPoll=SystemClock.elapsedRealtime();main.post(()->forward(b));
         }catch(Exception e){state=Bundle.EMPTY;art=null;lastPoll=0;error("IPHONE_BRIDGE_IPC_FAILED",e);}
     }
     private static void event(String s){worker.post(()->{try{context.getContentResolver().call(BridgeProvider.URI,"event",s,null);}catch(Exception ignored){}});}
     private static void error(String s,Throwable e){long now=SystemClock.elapsedRealtime();if(now-lastError<15000)return;lastError=now;Diagnostics.error(s,e);event(s);}
     private static boolean connected(){
-        Object manager=XposedHelpers.callStaticMethod(XposedHelpers.findClass("bluconnect.zif",loader),"y");
-        Object dash=XposedHelpers.getStaticObjectField(XposedHelpers.findClass("bluconnect.zif$b",loader),"o2");
-        if(XposedHelpers.callMethod(manager,"o")!=dash)return false;
-        Object transport=XposedHelpers.callMethod(manager,"L");return transport!=null&&XposedHelpers.getObjectField(transport,"b")!=null;
+        Object manager=XposedHelpers.callStaticMethod(XposedHelpers.findClass(HookTargets.manager(),loader),HookTargets.singleton());
+        Object dash=XposedHelpers.getStaticObjectField(XposedHelpers.findClass(HookTargets.manager()+"$b",loader),HookTargets.dash());
+        if(XposedHelpers.callMethod(manager,HookTargets.device())!=dash)return false;
+        Object transport=XposedHelpers.callMethod(manager,HookTargets.transport());return transport!=null&&XposedHelpers.getObjectField(transport,"b")!=null;
     }
     private static void forward(Bundle b){
         try {
-            if(!connected()){sentCall="";sentMedia="";return;}
+            boolean dash=connected();Bundle link=new Bundle();link.putBoolean("connected",dash);
+            if(worker!=null)worker.post(()->{try{context.getContentResolver().call(BridgeProvider.URI,"dashState",null,link);}catch(Exception ignored){}});
+            if(!dash){sentCall="";sentMedia="";return;}
             String call=b.getString("call",""),phase=b.getString("callPhase","");String callKey=call+"/"+phase;
             if(!callKey.equals(sentCall)){
-                Object calls=XposedHelpers.callStaticMethod(XposedHelpers.findClass("bluconnect.r42",loader),"m");
+                Object calls=XposedHelpers.callStaticMethod(XposedHelpers.findClass(HookTargets.calls(),loader),"m");
                 if(!call.isEmpty()){
                     String encoded=(String)XposedHelpers.callMethod(calls,"h",call,"");
                     XposedHelpers.callMethod(calls,"y",encoded,"0522");XposedHelpers.callMethod(calls,"u",phase.equals("active")||phase.equals("held")?"ACTIVE_CALL":phase.equals("outgoing")?"OUTGOING_CALL":"INCOMING_CALL");event("IPHONE_CALL_PACKET_SUBMITTED");
@@ -128,7 +133,7 @@ final class IPhoneDashHooks {
         if(!token.equals(actionToken)){actionToken=token;selectedAction=current.getString("positiveLabel","").isEmpty()?1:0;}
         selectedAction=CallActionGate.selection(selectedAction,current.getString("positiveLabel",""),current.getString("negativeLabel",""));
         current.putInt("selectedAction",selectedAction);
-        Bitmap copy=OverlayRenderer.render(source,current,art);
+        Bitmap copy=OverlayRenderer.render(source,current,current.getBoolean("callerPhoto")?callerArt:art);
         if(copy!=source&&!reportedOverlay){reportedOverlay=true;event("IPHONE_OVERLAY_ENCODE_SUBMITTED");}
         return copy;
     }

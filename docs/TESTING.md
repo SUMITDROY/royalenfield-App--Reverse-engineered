@@ -55,3 +55,19 @@ No video streaming, contact-photo transport, native Dash wallpaper upload or
 arbitrary dialing is implemented. A projected navigation overlay is not native
 firmware customization. No device or feature is marked passed just because an
 API request was accepted.
+
+## 0.5 update — 23 November 2026
+
+The connected phone now uses official RE version code 195. Explicit renamed
+encoder, manager, service/media-button and call-class mappings were checked against
+its local APK contracts. Fragment base lifecycle behavior was checked; both 193
+and 195 contract checks passed. Runtime `RUNTIME_HOOKS_READY_VERSION_195` and
+`IPHONE_BRIDGE_HOOKS_READY` were observed after install, followed by restored BLE
+ANCS/AMS and provider IPC. Rider tools and permission preflight opened on the phone.
+
+New isolated device tests passed ride checkpoints/summary, GPX UTC/coordinates,
+maintenance records, sensitive-data exclusion from backups, safe restore, privacy
+filtering and navigation-profile boundaries. Existing overlay and call-state tests
+passed. Fleet tests cover role/group isolation, invalid input, retention and remote
+deletion. Physical ride/contacts/auto-start/multi-rider checks are still pending;
+see [RIDER-TOOLS.md](RIDER-TOOLS.md). Raw local evidence remains excluded from Git.

@@ -84,7 +84,7 @@ public final class BridgeService extends Service {
             }
         },handler);
         artwork=new ArtworkLookup(this,this::publishMedia);
-        if(getSharedPreferences("bridge",0).getBoolean("hfpEnabled",false))enableHfp();
+        if(getSharedPreferences("bridge",0).getString("profile","full").equals("full")&&getSharedPreferences("bridge",0).getBoolean("hfpEnabled",false))enableHfp();
         handler.postDelayed(heartbeat,10000);
         try {
             if(checkSelfPermission("android.permission.BLUETOOTH_CONNECT")!=0||checkSelfPermission("android.permission.BLUETOOTH_ADVERTISE")!=0){
@@ -365,6 +365,7 @@ public final class BridgeService extends Service {
         }nextNotice();
     }
     void command(final int id){handler.post(()->{
+        if(getSharedPreferences("bridge",0).getString("profile","full").equals("navigation"))return;
         if(!BridgeState.mediaReady||remote==null){BridgeState.log("MEDIA_COMMAND_NOT_CONNECTED",null);return;}
         if(commandListKnown&&!supported.contains(id)){BridgeState.log("MEDIA_COMMAND_UNSUPPORTED_"+id,null);return;}
         write("AMS_COMMAND_"+id,remote,new byte[]{(byte)id},()->BridgeState.log("AMS_COMMAND_FORWARDED_"+id+"_PLAYER_ACTION_UNCONFIRMED",null));
@@ -377,6 +378,7 @@ public final class BridgeService extends Service {
             notice.category,notice.flags,SystemClock.elapsedRealtime(),BridgeState.callUntil,BridgeState.positiveLabel,BridgeState.negativeLabel);
     }
     void callAction(final String token,final int action){handler.post(()->{
+        if(!getSharedPreferences("bridge",0).getString("profile","full").equals("full"))return;
         if(BridgeState.hfpReady&&hfp!=null&&hfp.action(token,action))return;
         if(!validCallAction(token,action)){BridgeState.log("CALL_ACTION_UNAVAILABLE_OR_STALE",null);return;}
         if(token.equals(actionInFlight)){BridgeState.log("DUPLICATE_CALL_ACTION_IGNORED",null);return;}
@@ -387,6 +389,7 @@ public final class BridgeService extends Service {
     });}
     void enableHfp(){if(hfp==null)hfp=new HfpController(this);hfp.start();}
     void connectHfp(String address){enableHfp();hfp.connect(address);}
+    void stopAfterDashDisconnect(){handler.postDelayed(()->{if(!getSharedPreferences("bridge",0).getBoolean("autoSession",false))stopSelf();},15000);}
     void disableHfp(){if(hfp!=null){hfp.stop();hfp=null;}BridgeState.hfpStatus="Stopped";}
     void publishMedia(){
         if(Looper.myLooper()!=Looper.getMainLooper()){handler.post(this::publishMedia);return;}

@@ -8,7 +8,7 @@ current approach. Do not distribute or install the old experimental RE APKs.
 
 ## Hooks do not load / screen-off navigation stops
 
-Check the official app version code is 193 and the module is enabled/scoped in
+Check the official app version code is 193 or 195 and the module is enabled/scoped in
 LSPosed/Vector. Restart the official app after changing scopes or updating the
 module. `RUNTIME_HOOKS_READY_VERSION_193` confirms setup, while
 `UNSUPPORTED_VERSION`, `HOOK_SETUP_FAILED` or `RUNTIME_HOOKS_DISABLED` require

@@ -2,7 +2,7 @@
 
 ## Preserve the official app
 
-Use the original signed Royal Enfield app, version code 193. Updating the
+Use the original signed Royal Enfield app, version codes 193 or 195. Updating the
 companion does not replace it or change authentication. Other RE versions need
 new hook analysis; the version gate intentionally disables unsupported hooks.
 No official APK download is provided here.
@@ -21,7 +21,7 @@ are already installed; they do not flash or root the phone.
 4. Connect Android to Tripper Dash using the normal official setup. Start a route
    while stationary. Lock the Android display for at least 60 seconds and check
    real progress/map updates on the Dash, then unlock and stop navigation.
-5. Inspect navigation logs for `RUNTIME_HOOKS_READY_VERSION_193`. Installation,
+5. Inspect navigation logs for `RUNTIME_HOOKS_READY_VERSION_193` or `RUNTIME_HOOKS_READY_VERSION_195`. Installation,
    a connected IPC provider or repeated frames alone do not prove map updates.
 
 ## iPhone media and notification bridge
@@ -89,3 +89,5 @@ authorized recovery/root access or reboot, and retain the scope until HFP is off
 Disable the module and reopen Royal Enfield to remove navigation hooks. The
 official signed app remains installed. Keep your own previously working companion
 APK/key for rollback; no private device backups are published here.
+
+For 0.5 rider tools, permissions, local data and fleet setup see [RIDER-TOOLS.md](RIDER-TOOLS.md).

@@ -10,6 +10,17 @@ account access during the investigation; that approach is not the installation p
 No Royal Enfield APKs, firmware, decompiled application sources, personal logs or
 private signing keys are included in this repository.
 
+## Rider tools update (0.5)
+
+The companion now includes local trip/GPX history, profiles, Android contact-photo
+lookup, maintenance/fuel records, parking location, configurable navigation cards,
+privacy/emergency/guest tools, compatibility and redacted support export. Optional
+fleet/group functionality uses the included self-hosted HTTPS relay; it is not a
+preconfigured hosted service. See [RIDER-TOOLS.md](docs/RIDER-TOOLS.md) for all setup,
+permission, validation and data-removal details. Android recording/contact lookup
+and fleet sharing remain off until explicitly enabled. RE **193 and 195** have
+explicit hook mappings; unknown versions still fail closed.
+
 ## Current status
 
 This is a version-pinned prototype, not universal Android support.
@@ -30,7 +41,7 @@ This is a version-pinned prototype, not universal Android support.
 - Cover art: optional exact artist/title matching against Apple's catalog;
   downloaded artwork is not an image supplied by the iPhone. End-to-end artwork
   delivery is not fully verified.
-- Custom native speedometer/clock wallpaper, caller profile photos, iPhone video
+- Custom native speedometer/clock wallpaper, photos fetched directly from iPhone, iPhone video
   streaming and arbitrary outbound dialing are **not implemented**.
 
 See [testing evidence and open issues](docs/TESTING.md),
@@ -39,8 +50,8 @@ See [testing evidence and open issues](docs/TESTING.md),
 
 ## Requirements
 
-- Original Royal Enfield Android package `com.royalenfield.reprime`, **version code
-  193**, version `10.1.23(45)`. Hooks deliberately disable on other app versions.
+- Original Royal Enfield Android package `com.royalenfield.reprime`, **version codes
+  193 (`10.1.23(45)`) and 195 (`10.1.26(06)`)**. Hooks deliberately disable on other app versions.
 - Android 12/API 31 or newer for the module; **only OnePlus 13 on Android 15/API 35
   has been used for this setup**. The optional Bluetooth compatibility hook is
   restricted to API 35. API support in the manifest does not establish device support.
@@ -140,6 +151,7 @@ before attaching to an issue. Read [privacy](docs/PRIVACY.md).
 - `rea/`: pinned [REA](https://github.com/morluto/rea) investigation tool submodule,
   with its own license and installation instructions; not needed to build the module.
 - `scripts/`: portable dependency/build configuration.
+- `fleet-server/`: optional self-hosted fleet/group relay, manager UI and tests.
 - `docs/`: setup, design, validation, privacy and known limitations.
 
 ## Contributing and license

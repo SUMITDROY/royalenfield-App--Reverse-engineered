@@ -35,6 +35,7 @@ public final class BridgeProvider extends ContentProvider {
             }
             return BridgeState.snapshot();
         }
+        if("dashState".equals(method)&&extras!=null){BridgeState.dashConnected=extras.getBoolean("connected");BridgeState.dashUpdated=SystemClock.elapsedRealtime();return Bundle.EMPTY;}
         if("command".equals(method)){
             int command=extras==null?-1:extras.getInt("command",-1);
             if(command>=0&&command<=6&&BridgeService.current!=null)BridgeService.current.command(command);
@@ -51,8 +52,9 @@ public final class BridgeProvider extends ContentProvider {
         return Bundle.EMPTY;
     }
     @Override public ParcelFileDescriptor openFile(Uri uri,String mode)throws FileNotFoundException {
-        authorize();if(!"r".equals(mode)||!"/art".equals(uri.getPath()))throw new FileNotFoundException();
-        return ParcelFileDescriptor.open(new File(getContext().getFilesDir(),"cover.png"),ParcelFileDescriptor.MODE_READ_ONLY);
+        authorize();if(!"r".equals(mode)||!("/art".equals(uri.getPath())||"/caller".equals(uri.getPath())))throw new FileNotFoundException();
+        if("/caller".equals(uri.getPath())&&getContext().getSharedPreferences("bridge",0).getBoolean("privacy",false))throw new FileNotFoundException();
+        return ParcelFileDescriptor.open(new File(getContext().getFilesDir(),("/caller".equals(uri.getPath())?"caller.png":"cover.png")),ParcelFileDescriptor.MODE_READ_ONLY);
     }
     @Override public Cursor query(Uri u,String[] p,String s,String[] a,String o){authorize();return null;}
     @Override public String getType(Uri u){authorize();return "image/png";}

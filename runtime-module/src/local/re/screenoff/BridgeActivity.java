@@ -25,8 +25,10 @@ public final class BridgeActivity extends Activity {
     @Override public void onCreate(Bundle b){
         super.onCreate(b);BridgeState.init(this);
         ScrollView scroll=new ScrollView(this);LinearLayout layout=new LinearLayout(this);layout.setOrientation(LinearLayout.VERTICAL);layout.setPadding(24,32,24,32);scroll.addView(layout);setContentView(scroll);
+        scroll.setOnApplyWindowInsetsListener((v,insets)->{android.graphics.Insets bars=insets.getInsets(android.view.WindowInsets.Type.systemBars());layout.setPadding(24+bars.left,20+bars.top,24+bars.right,32+bars.bottom);return insets;});scroll.requestApplyInsets();
         TextView title=new TextView(this);title.setText("Tripper iPhone Bridge");title.setTextSize(25);layout.addView(title);
         status=new TextView(this);status.setTextSize(16);status.setPadding(0,20,0,20);layout.addView(status);
+        button(layout,"Ride tools / trips / contacts / fleet / settings",v->startActivity(new Intent(this,RideActivity.class)));
         TextView help=new TextView(this);help.setText("Android stays connected to the Dash for navigation. iPhone provides calls and media.\n\n1. Tap Start.\n2. Use Tripper Pair on iPhone (or LightBlue) to connect to this Android and accept pairing / notification sharing.\n3. Finish pairing and release the app connection. Start music on iPhone.\n4. Open Royal Enfield. Notification access must be enabled.\n\nIncoming-call actions appear only when iPhone reports them. With a call card visible, media Next/Previous selects an action; Play/Pause performs it. Actual Dash routing must be tested. The buttons below provide the same actions.\n\nConnect the root iPhone call channel for active-call details and Disconnect. Grant KernelSU root to this bridge when prompted. First activation may restart Bluetooth. The compatibility fix must be enabled for Bluetooth in Vector. Audio routing to Android is disabled once connected; verify headset audio during testing. A ringing alert disappearing alone is not interpreted as an answered call.\n\nThis build does not stream iPhone video.");layout.addView(help);
         button(layout,"Start bridge",v->start());button(layout,"Stop bridge",v->{getSharedPreferences("bridge",0).edit().putBoolean("enabled",false).apply();stopService(new Intent(this,BridgeService.class));});
         button(layout,"Refresh iPhone call/music services",v->{if(BridgeService.current!=null)BridgeService.current.refreshIphone();});
@@ -41,7 +43,7 @@ public final class BridgeActivity extends Activity {
                 if(devices.isEmpty()){Toast.makeText(this,"Use Pair iPhone for calls, then pair from iPhone Bluetooth Settings",Toast.LENGTH_LONG).show();return;}
                 String[] names=new String[devices.size()];for(int i=0;i<names.length;i++)names[i]=devices.get(i).getName()==null?"Bluetooth device":devices.get(i).getName();
                 new android.app.AlertDialog.Builder(this).setTitle("Select your iPhone for calls").setItems(names,(dialog,index)->{
-                    String address=devices.get(index).getAddress();getSharedPreferences("bridge",0).edit().putString("hfpPeer",address).putBoolean("hfpEnabled",true).apply();BridgeService.current.connectHfp(address);
+                    String address=devices.get(index).getAddress();getSharedPreferences("bridge",0).edit().putString("profile","full").putString("hfpPeer",address).putBoolean("hfpEnabled",true).apply();BridgeService.current.connectHfp(address);
                 }).show();
             }catch(Exception e){BridgeState.log("HFP_DEVICE_PICKER_FAILED",e);}
         });

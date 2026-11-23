@@ -11,7 +11,7 @@ from build_support import configuration,signing
 java_bin,sdk,bt,android,env=configuration();java=java_bin.parent
 def run(args):subprocess.run([str(a) for a in args],check=True,env=env)
 base=root/'runtime-module/src/local/re/screenoff'
-run([java/'bin/javac','-source','8','-target','8','-cp',android,'-d',classes,tests/'OverlayDeviceTest.java',tests/'CallStateDeviceTest.java',*[base/name for name in ['OverlayRenderer.java','HfpController.java','BridgeState.java','AppleProtocol.java','CallActionGate.java']]])
+run([java/'bin/javac','-source','8','-target','8','-cp',android,'-d',classes,tests/'OverlayDeviceTest.java',tests/'CallStateDeviceTest.java',tests/'RideToolsDeviceTest.java',*[base/name for name in ['OverlayRenderer.java','HfpController.java','BridgeState.java','AppleProtocol.java','CallActionGate.java','CallerPhotos.java','RideHealth.java','RideStore.java']]])
 jar=out/'classes.jar'
 with zipfile.ZipFile(jar,'w') as z:
     for f in classes.rglob('*.class'):z.write(f,f.relative_to(classes))

@@ -12,13 +12,13 @@ for pairing, limitations and diagnostics. The screen-off behavior below is
 preserved. Keep your own previously working module APK/key for rollback.
 
 This separate LSPosed module targets the original Royal Enfield Android app
-`com.royalenfield.reprime`, version code 193, Android 12 or later. It does not
+`com.royalenfield.reprime`, version codes 193 and 195, Android 12 or later. It does not
 repackage the app or change account authentication. Navigation hooks run only in that
 app's main process; the optional HFP compatibility hook runs in Bluetooth. Other RE versions leave navigation hooks disabled.
 
 Enable the module in LSPosed and scope navigation to RoyalEnfield. The optional
 Android-15 call compatibility fix additionally needs Bluetooth scope. Force-stop and
-reopen RoyalEnfield. Look for `RUNTIME_HOOKS_READY_VERSION_193` in the persistent
+reopen RoyalEnfield. Look for `RUNTIME_HOOKS_READY_VERSION_193` / `RUNTIME_HOOKS_READY_VERSION_195` in the persistent
 log. `RUNTIME_HOOKS_DISABLED` or `HOOK_SETUP_FAILED` means it is not active.
 If setup fails, already-installed behavioral hooks are removed.
 
@@ -55,3 +55,5 @@ The compile-only Xposed API 82 is fetched with a pinned checksum. Local builds u
 a private local development key, not the original workspace signer. No raw crash
 logs or previously installed APK backups are published. See
 [TESTING.md](../docs/TESTING.md) for current evidence and unresolved headset controls.
+
+Version 0.5 adds [rider tools](../docs/RIDER-TOOLS.md) and explicit version-195 hook mappings.

@@ -55,7 +55,7 @@ just to resolve the companion's signing error.
 ## Optional original-APK hook validation
 
 The build does not need the official APK. To verify hook signatures independently,
-obtain your own official version-code-193 APK and decode it locally with APKTool.
+obtain your own official version-code-193 or 195 APK and decode it locally with APKTool.
 Do not upload that APK or its decoded output.
 
 ```sh
@@ -67,7 +67,8 @@ python3 runtime-module/tests/check_hook_contracts.py --decoded /path/to/decode
 
 Only the declared bridge targets are checked by this script; it is not a complete
 verification of lifecycle semantics, Bluetooth firmware or map delivery.
-Runtime hooks independently enforce version code 193.
+Runtime hooks independently enforce explicit version mappings for 193 and 195.
+For 195: `python3 runtime-module/tests/check_hook_contracts.py --version 195 --decoded /path/to/decode`.
 
 ## Tests
 
@@ -84,6 +85,7 @@ python3 runtime-module/tests/build_device_test.py
 adb install -r output/bridge-overlay-tests/overlay-test.apk
 adb shell am instrument -w local.re.screenoff.overlaytest/local.re.screenoff.tests.OverlayDeviceTest
 adb shell am instrument -w local.re.screenoff.overlaytest/local.re.screenoff.CallStateDeviceTest
+adb shell am instrument -w local.re.screenoff.overlaytest/local.re.screenoff.RideToolsDeviceTest
 adb uninstall local.re.screenoff.overlaytest
 ```
 

@@ -31,15 +31,15 @@ public final class RuntimeHooks implements IXposedHookLoadPackage {
                 XposedBridge.hookAllMethods(XposedHelpers.findClass("com.royalenfield.reprime.RoyalEnfieldApp",loader),"onCreate",new XC_MethodHook(){
                     @Override protected void afterHookedMethod(MethodHookParam ignored){
                         Diagnostics.init(context);
-                        Diagnostics.event(context,ready ? "RUNTIME_HOOKS_READY_VERSION_193" : "RUNTIME_HOOKS_DISABLED");
+                        Diagnostics.event(context,ready ? "RUNTIME_HOOKS_READY_VERSION_"+HookTargets.version : "RUNTIME_HOOKS_DISABLED");
                         if(setupError!=null)Diagnostics.error("HOOK_SETUP_FAILED",setupError);
                         if(ready)IPhoneDashHooks.install(context,loader);
                     }
                 });
                 try {
                     long version=context.getPackageManager().getPackageInfo(p.packageName,0).getLongVersionCode();
-                    if(version!=193){android.util.Log.e("REScreenOff","UNSUPPORTED_VERSION "+version);return;}
-                    setup();ready=true;
+                    if(version!=193&&version!=195){android.util.Log.e("REScreenOff","UNSUPPORTED_VERSION "+version);return;}
+                    HookTargets.version=version;setup();ready=true;
                 } catch(Throwable error){
                     for(XC_MethodHook.Unhook hook:installed)hook.unhook();installed.clear();
                     active=false; setupError=error;android.util.Log.e("REScreenOff","HOOK_SETUP_FAILED",error);
@@ -58,9 +58,9 @@ public final class RuntimeHooks implements IXposedHookLoadPackage {
         String reason="ENCODER_NOT_STARTED";
         try {
             if(active){
-                Object manager=XposedHelpers.callStaticMethod(XposedHelpers.findClass("bluconnect.zif",loader),"y");
-                Object device=XposedHelpers.callMethod(manager,"o");
-                Object dash=XposedHelpers.getStaticObjectField(XposedHelpers.findClass("bluconnect.zif$b",loader),"o2");
+                Object manager=XposedHelpers.callStaticMethod(XposedHelpers.findClass(HookTargets.manager(),loader),HookTargets.singleton());
+                Object device=XposedHelpers.callMethod(manager,HookTargets.device());
+                Object dash=XposedHelpers.getStaticObjectField(XposedHelpers.findClass(HookTargets.manager()+"$b",loader),HookTargets.dash());
                 if(device!=dash)reason="DEVICE_NOT_TRIPPER_DASH";
                 else {
                     PowerManager power=(PowerManager)context.getSystemService(Context.POWER_SERVICE);
@@ -101,15 +101,15 @@ public final class RuntimeHooks implements IXposedHookLoadPackage {
         for(String cls:new String[]{NAV,root,sdk}){
             XposedHelpers.findMethodExact(XposedHelpers.findClass(cls,loader),"onPause");
         }
-        XposedHelpers.findMethodExact(XposedHelpers.findClass("bluconnect.w9f",loader),"d");
-        XposedHelpers.findMethodExact(XposedHelpers.findClass("bluconnect.w9f",loader),"e");
-        hook("bluconnect.gub","i",new XC_MethodHook(){
+        XposedHelpers.findMethodExact(XposedHelpers.findClass(HookTargets.wrapper(),loader),"d");
+        XposedHelpers.findMethodExact(XposedHelpers.findClass(HookTargets.wrapper(),loader),"e");
+        hook(HookTargets.encoder(),"i",new XC_MethodHook(){
             @Override protected void afterHookedMethod(MethodHookParam p){
                 if(p.hasThrowable()){Diagnostics.error("ENCODER_START_FAILED",p.getThrowable());return;}
                 active=true;Diagnostics.begin();
             }
         });
-        hook("bluconnect.gub","j",new XC_MethodHook(){
+        hook(HookTargets.encoder(),"j",new XC_MethodHook(){
             @Override protected void beforeHookedMethod(MethodHookParam p){active=false;Diagnostics.end();}
             @Override protected void afterHookedMethod(MethodHookParam p){if(p.hasThrowable())Diagnostics.error("ENCODER_STOP_FAILED",p.getThrowable());}
         });
@@ -141,7 +141,7 @@ public final class RuntimeHooks implements IXposedHookLoadPackage {
         hook(NAV,"r",new XC_MethodHook(){
             @Override protected void beforeHookedMethod(MethodHookParam p){Diagnostics.snapshot((Bitmap)p.args[0]);}
         },Bitmap.class);
-        hook("bluconnect.gub","g",new XC_MethodHook(){
+        hook(HookTargets.encoder(),"g",new XC_MethodHook(){
             @Override protected void afterHookedMethod(MethodHookParam p){
                 if(p.hasThrowable())Diagnostics.error("ENCODER_SUBMIT_FAILED",p.getThrowable());else Diagnostics.frameSubmitted();
             }

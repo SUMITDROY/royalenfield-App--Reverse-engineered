@@ -28,3 +28,14 @@ exact final failure reason.
 Private logs, account data, APK backups, signing secrets, decompiled vendor code
 and original firmware are excluded from the public repository. The optional REA
 tool has its own configuration and policies; no account configuration is shipped.
+
+## Optional rider tools (0.5)
+
+Explicitly started GPS recording stores precise points and summaries in app-private
+SQLite. GPX exports contain those points. Caller photos require Android contacts
+permission and are cached privately; privacy mode removes provider photo access.
+Emergency/fuel/maintenance/parking data remain local. Fleet sharing is off by default
+and requires a configured HTTPS server, rider token and separate opt-in. No location
+backfill occurs. See [RIDER-TOOLS.md](RIDER-TOOLS.md) for consent, retention, guest
+limitations, remote deletion and safe settings backups. The redacted support export
+excludes raw logs, location/identity/contact text and credentials.

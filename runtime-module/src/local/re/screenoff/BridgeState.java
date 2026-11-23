@@ -18,6 +18,7 @@ final class BridgeState {
     static volatile String callToken="",positiveLabel="",negativeLabel="",callPhase="";
     static volatile String hfpStatus="Not enabled";static volatile boolean hfpReady;static volatile long connectedSince,hfpLastUpdate;
     static volatile int hfpCallCount;
+    static volatile boolean dashConnected;static volatile long dashUpdated;
     static void init(Context c){context=c.getApplicationContext();}
     static synchronized void log(String event,Throwable error) {
         String s=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS",Locale.US).format(new Date())+" "+event;
@@ -47,11 +48,21 @@ final class BridgeState {
         b.putString("hfpStatus",hfpStatus);b.putBoolean("hfpReady",hfpReady);b.putLong("connectedSince",connectedSince);
         b.putBoolean("hookAlive",now-lastHook<10000&&lastHook>0);
         b.putBoolean("overlay",context!=null&&context.getSharedPreferences("bridge",0).getBoolean("overlay",true));
+        if(context!=null){
+            android.content.SharedPreferences prefs=context.getSharedPreferences("bridge",0);
+            boolean privacy=prefs.getBoolean("privacy",false);String profile=prefs.getString("profile","full");
+            if(privacy){if(!call.isEmpty())b.putString("call","Private caller");if(!alert.isEmpty())b.putString("alert","Private notification");}
+            if(profile.equals("navigation")){b.putBoolean("running",false);b.putBoolean("mediaReady",false);b.putString("call","");b.putString("alert","");b.putString("title","");}
+            else if(profile.equals("music")){b.putString("call","");b.putString("alert","");}
+            b.putBoolean("callerPhoto",CallerPhotos.available&&!privacy&&!call.isEmpty()&&profile.equals("full"));b.putLong("callerPhotoVersion",CallerPhotos.version);
+            b.putInt("overlayColor",prefs.getInt("overlayColor",0xDE101216));b.putBoolean("overlayLeft",prefs.getString("overlaySide","right").equals("left"));
+            b.putString("health",prefs.getBoolean("healthOverlay",false)?RideHealth.battery(context)+(dashUpdated>0&&now-dashUpdated>10000?" • Dash link unknown":""):"");
+        }
         return b;
     }
     static synchronized void disconnected(){
         mediaReady=false;callsReady=false;playing=false;title="";artist="";album="";player="";alert="";if(!hfpReady)clearCall();
         callUntil=0;alertUntil=0;artVersion++;changed++;
     }
-    static synchronized void clearCall(){call="";callToken="";positiveLabel="";negativeLabel="";callPhase="";callUntil=0;connectedSince=0;}
+    static synchronized void clearCall(){if(context!=null)CallerPhotos.clear(context);call="";callToken="";positiveLabel="";negativeLabel="";callPhase="";callUntil=0;connectedSince=0;}
 }

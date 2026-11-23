@@ -51,6 +51,7 @@ final class HfpController {
             if(chosen==null||priority(c.optInt("state"))<priority(chosen.optInt("state")))chosen=c;
         }
         selected=chosen;
+        CallerPhotos.update(context,chosen==null?"":chosen.optString("number",""),chosen==null?"":"hfp:"+chosen.optString("uuid"));
         if(chosen==null){if(callWake.isHeld())callWake.release();if(!lastUuid.isEmpty())BridgeState.log("HFP_CALLS_CLEARED",null);if(BridgeState.callToken.startsWith("hfp:")||BridgeState.hfpReady)BridgeState.clearCall();lastUuid="";lastCallState=-1;return;}
         try{callWake.acquire(90000);}catch(Exception e){BridgeState.log("HFP_CALL_WAKE_LOCK_FAILED",e);}
         String uuid=chosen.optString("uuid");int state=chosen.optInt("state");

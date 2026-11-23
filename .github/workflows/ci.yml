@@ -25,6 +25,8 @@ jobs:
         run: python3 scripts/bootstrap.py
       - name: Protocol and action guard tests
         run: python3 runtime-module/tests/run.py
+      - name: Fleet server tests
+        run: python3 -m unittest discover -s fleet-server -v
       - name: Build module
         run: python3 runtime-module/build.py
       - name: Build isolated instrumentation tests

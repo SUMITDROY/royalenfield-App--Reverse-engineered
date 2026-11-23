@@ -4,4 +4,5 @@
   <application android:label="Tripper overlay test" android:allowBackup="false"/>
   <instrumentation android:name="local.re.screenoff.tests.OverlayDeviceTest" android:targetPackage="local.re.screenoff.overlaytest"/>
   <instrumentation android:name="local.re.screenoff.CallStateDeviceTest" android:targetPackage="local.re.screenoff.overlaytest"/>
+  <instrumentation android:name="local.re.screenoff.RideToolsDeviceTest" android:targetPackage="local.re.screenoff.overlaytest"/>
 </manifest>

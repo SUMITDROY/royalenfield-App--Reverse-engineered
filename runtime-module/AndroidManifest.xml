@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.re.screenoff.module" android:versionCode="8" android:versionName="0.6-hud">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="local.re.screenoff.module" android:versionCode="9" android:versionName="0.7-cockpit">
   <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="35"/>
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
   <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
@@ -19,6 +19,7 @@
     <activity android:name="local.re.screenoff.BridgeActivity" android:exported="true">
       <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
     </activity>
+    <activity android:name="local.re.screenoff.AppearanceActivity" android:exported="false"/>
     <activity android:name="local.re.screenoff.RideActivity" android:exported="false"/>
     <service android:name="local.re.screenoff.TripRecorderService" android:exported="false" android:foregroundServiceType="location"/>
     <receiver android:name="local.re.screenoff.DashAutomationReceiver" android:exported="true" android:permission="android.permission.BLUETOOTH_CONNECT"><intent-filter><action android:name="android.bluetooth.device.action.ACL_CONNECTED"/><action android:name="android.bluetooth.device.action.ACL_DISCONNECTED"/></intent-filter></receiver>

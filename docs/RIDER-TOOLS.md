@@ -149,3 +149,28 @@ that the Dash, iPhone or headset is connected. Separate telemetry distinguishes 
 IPC from Dash transport presence. No decorative animation loop runs in the background.
 Pairing instructions are available through the Pairing guide button. Existing
 permissions, saved settings, profiles and backend behavior remain unchanged.
+
+## 0.7 app wallpaper and manual odometer
+
+Open **Command centre → Personalise cockpit → Wallpaper & odometer**, or the
+matching Ride tools section. Choose an image through Android's document picker;
+no broad photo-library permission is requested. The image is copied into private
+app storage, bounded to 1600 pixels on its longest side, with a 16 MB input limit.
+A dark scrim preserves text contrast. The background applies to the bridge,
+rider-tools and appearance screens only, not the Android launcher, projected
+navigation map or native motorcycle instruments. Built-in cyan-grid, ember-grid
+and plain-dark options are provided, plus removal of the saved photo.
+
+Set your manual reading in kilometres. The digital/arc/minimal card is displayed
+on the command centre and preview screen, with cyan/amber/crimson accents and a
+km/miles display conversion. The underlying odometer field stays in kilometres
+for maintenance/fuel records. It never reads, changes or automatically increments
+the motorcycle's actual odometer. An unset/invalid value displays a dash, not a
+fabricated reading. Settings and the private wallpaper survive same-signer app
+updates; the portable backup does not include the selected photo.
+
+On-device appearance tests cover invalid/unset readings, km/miles conversion
+without stored-data mutation, all three card styles and wallpaper presets/fallbacks.
+The owner selected a real image on the connected phone; its import, private saved
+file and visible background were checked. A startup window-insets timing error
+found during validation was corrected before publishing this build.

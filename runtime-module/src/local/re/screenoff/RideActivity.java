@@ -49,6 +49,7 @@ public final class RideActivity extends Activity {
         heading("Fuel and estimated range");
         button("Log a refuel",()->form("Refuel (km / litres)",new String[]{"Odometer km","Litres added","Full tank? yes/no"},new String[]{p.getString("odometer",""),"","yes"},v->{double km=number(v[0]),litres=number(v[1]);if(litres<=0)throw new Exception("Litres must be greater than zero");JSONArray records=store.records("fuel");if(records.length()>0&&km<records.getJSONObject(0).getDouble("km"))throw new Exception("Odometer must not decrease");store.record("fuel",new JSONObject().put("km",km).put("litres",litres).put("full",v[2].equalsIgnoreCase("yes")));p.edit().putString("odometer",v[0]).apply();fuel();}));
         button("Estimate remaining range",()->form("Manual fuel estimate",new String[]{"Estimated remaining litres"},new String[]{p.getString("remainingLitres","")},v->{number(v[0]);p.edit().putString("remainingLitres",v[0]).apply();fuel();}));
+        heading("App wallpaper and odometer");button("Personalise cockpit / wallpaper / odometer",()->startActivity(new Intent(this,AppearanceActivity.class)));
         heading("Navigation overlay");toggle("Show overlay", "overlay",true,null);toggle("Show Android battery / charging", "healthOverlay",false,null);
         button("Overlay colour",()->new AlertDialog.Builder(this).setItems(new String[]{"Charcoal","Navy","Forest"},(d,n)->p.edit().putInt("overlayColor",new int[]{0xEE101216,0xEE10243B,0xEE143027}[n]).apply()).show());
         button("Overlay position",()->new AlertDialog.Builder(this).setItems(new String[]{"Bottom left","Bottom right"},(d,n)->p.edit().putString("overlaySide",n==0?"left":"right").apply()).show());
@@ -110,7 +111,7 @@ public final class RideActivity extends Activity {
         if(req==204){try(InputStream in=getContentResolver().openInputStream(data.getData())){ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1){if(out.size()+n>16384)throw new IOException("Settings file too large");out.write(b,0,n);}store.restore(this,new JSONObject(out.toString("UTF-8")));if(BridgeService.current!=null)BridgeService.current.disableHfp();toast("Safe settings restored; reopen screen to refresh controls");}return;}
         try(OutputStream out=getContentResolver().openOutputStream(data.getData(),"wt")){if(req==201)store.gpx(exportRide,out);else if(req==202)out.write(RideHealth.support(this).getBytes("UTF-8"));else if(req==203)out.write(store.backup(this).toString(2).getBytes("UTF-8"));}toast("Exported");
     }catch(Exception e){toast("Export/import failed: "+e.getMessage());BridgeState.log("RIDE_EXPORT_IMPORT_FAILED",null);}}
-    @Override protected void onResume(){super.onResume();handler.post(refresh);notifyMaintenance();}
+    @Override protected void onResume(){super.onResume();DashboardAppearance.apply(this);handler.post(refresh);notifyMaintenance();}
     private void notifyMaintenance(){
         String today=java.time.LocalDate.now().toString();if(p.getString("maintenanceNotified","").equals(today))return;
         try{JSONArray a=store.records("maintenance"),done=store.records("maintenanceDone");Set<Long> complete=new HashSet<>();for(int i=0;i<done.length();i++)complete.add(done.getJSONObject(i).getLong("task"));double odo=Double.parseDouble(p.getString("odometer","0"));int count=0;

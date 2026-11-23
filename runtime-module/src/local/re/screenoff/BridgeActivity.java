@@ -11,6 +11,7 @@ import java.io.*;
 
 /** Small setup screen; bridge runs as a connected-device foreground service. */
 public final class BridgeActivity extends Activity {
+    private DashboardAppearance.Odometer odometer;
     private TextView status,mediaStatus,linkStatus;private HudTheme.Reactor reactor;private Button positive,negative;private final Handler handler=new Handler(Looper.getMainLooper());
     private final Runnable refresh=new Runnable(){public void run(){
         Bundle b=BridgeState.snapshot();
@@ -36,6 +37,8 @@ public final class BridgeActivity extends Activity {
         TextView subtitle=HudTheme.label(this,"Android navigates. iPhone stays yours.",14,HudTheme.MUTED);subtitle.setPadding(0,8,0,16);layout.addView(subtitle);
         reactor=new HudTheme.Reactor(this);layout.addView(reactor,new LinearLayout.LayoutParams(-1,HudTheme.dp(this,154)));
         linkStatus=HudTheme.label(this,"BRIDGE STANDBY",11,HudTheme.CYAN);linkStatus.setGravity(android.view.Gravity.CENTER);linkStatus.setPadding(0,4,0,20);layout.addView(linkStatus);
+        odometer=new DashboardAppearance.Odometer(this);layout.addView(odometer,new LinearLayout.LayoutParams(-1,HudTheme.dp(this,150)));
+        button(layout,"Personalise cockpit  →  Wallpaper & odometer",v->startActivity(new Intent(this,AppearanceActivity.class)));
         section(layout,"01  /  CONNECTION TELEMETRY");
         status=new TextView(this);status.setTextSize(14);status.setPadding(28,24,28,24);status.setBackground(HudTheme.panel(HudTheme.PANEL,HudTheme.LINE));layout.addView(status);
         section(layout,"02  /  NOW PLAYING & CALLS");
@@ -88,7 +91,7 @@ public final class BridgeActivity extends Activity {
             try{getSharedPreferences("bridge",0).edit().putBoolean("enabled",true).apply();startForegroundService(new Intent(this,BridgeService.class));}catch(Exception e){BridgeState.log("START_REQUEST_FAILED",e);}
         }
     }
-    @Override protected void onResume(){super.onResume();handler.post(refresh);}
+    @Override protected void onResume(){super.onResume();DashboardAppearance.apply(this);if(odometer!=null)odometer.invalidate();handler.post(refresh);}
     @Override protected void onPause(){handler.removeCallbacks(refresh);super.onPause();}
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);if(request!=44||result!=RESULT_OK||data==null||data.getData()==null)return;

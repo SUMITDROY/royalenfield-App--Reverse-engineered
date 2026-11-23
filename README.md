@@ -10,6 +10,14 @@ account access during the investigation; that approach is not the installation p
 No Royal Enfield APKs, firmware, decompiled application sources, personal logs or
 private signing keys are included in this repository.
 
+## App appearance (0.7)
+
+The Android companion now supports user-picked wallpaper, built-in backgrounds,
+and a custom manual odometer card with three designs, accent colours and km/miles
+units. Open **Personalise cockpit** from the command centre. This changes the
+Android app only; it does not alter native Dash wallpaper or the bike’s odometer.
+See [appearance setup](docs/RIDER-TOOLS.md#07-app-wallpaper-and-manual-odometer).
+
 ## Rider tools update (0.5)
 
 The companion now includes local trip/GPX history, profiles, Android contact-photo

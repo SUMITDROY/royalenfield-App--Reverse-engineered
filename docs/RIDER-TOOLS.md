@@ -115,7 +115,8 @@ never auto-starts location recording.
 
 The redacted support report deliberately omits raw logs, phone identities, routes,
 caller/track text, emergency information and tokens. It includes versions, permission
-states and connection booleans. Existing raw-log export remains separate and may
+states, connection booleans and strictly allowlisted failure-code tokens from recent
+bridge logs, without their messages or stack traces. Existing raw-log export remains separate and may
 contain personal information: review before sharing.
 
 Portable settings backup includes only profile, privacy and overlay/artwork choices.

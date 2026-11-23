@@ -20,7 +20,7 @@ public final class RideToolsDeviceTest extends Instrumentation {
         store.restore(c,backup);check(!c.getSharedPreferences("bridge",0).getBoolean("sharing",true)&&!c.getSharedPreferences("bridge",0).getBoolean("hfpEnabled",true),"Restore cannot activate sharing/root");
         BridgeState.call="Private name";BridgeState.alert="Private text";BridgeState.callUntil=0;Bundle b=BridgeState.snapshot();check(b.getString("call").equals("Private caller")&&b.getString("alert").equals("Private notification"),"Privacy filters IPC");
         c.getSharedPreferences("bridge",0).edit().putString("profile","navigation").commit();b=BridgeState.snapshot();check(!b.getBoolean("running")&&b.getString("call").isEmpty(),"Navigation profile removes call data");
-        String report=RideHealth.support(c);check(!report.contains("PRIVATE")&&!report.contains("Private name"),"Redacted report excludes sensitive state");
+        BridgeState.log("GATT_FAULT_FAILED PRIVATE_SECRET",null);String report=RideHealth.support(c);check(report.contains("GATT_FAULT_FAILED"),"Support preserves safe failure codes");check(!report.contains("PRIVATE")&&!report.contains("Private name"),"Redacted report excludes sensitive state");
         result.putString("stream","PASS: ride checkpoints, summary, GPX UTC, maintenance, safe backup/restore, privacy/profile boundaries and support report\n");finish(-1,result);
     }catch(Throwable e){result.putString("stream","FAIL: "+e);finish(0,result);}finally{if(store!=null)store.close();}}
 }
